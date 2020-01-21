@@ -2,6 +2,7 @@ open Framework;
 open QCheckRely;
 open Generator.Fantasy;
 open Lib.Troll;
+open Lib.Elf;
 
 let {describe} = extendDescribe(QCheckRely.Matchers.matchers);
 
@@ -67,7 +68,7 @@ describe("Troll Analogy", ({test}) => {
     ()
   });
 });
-/*
+
 describe("Troll Idempotence", ({test}) => {
   test(
     "all_elves_of_a_kind_resurrected brings the Troll killing list to a stable state",
@@ -76,9 +77,77 @@ describe("Troll Idempotence", ({test}) => {
         ~count=1000,
         ~name="all_elves_of_a_kind_resurrected brings the Troll killing list to a stable state",
         troll_elf_arbitrary,
-        ((troll,elf)) => ( all_elves_of_a_kind_resurrected(elf,troll|> scoring ) == ( all_elves_of_a_kind_resurrected(elf,troll) |> scoring )
+        ((troll,elf)) => {
+          let test = all_elves_of_a_kind_resurrected(elf,troll);
+          let test2 = all_elves_of_a_kind_resurrected(elf,troll);
+          (test |> scoring ) == ( test2 |> scoring )
+        }
       )
       |> expect.ext.qCheckTest;
       ()
   })
-});*/
+  test(
+    "all_elves_resurrected brings the Troll killing list to a stable state",
+    ({expect}) => {
+      QCheck.Test.make(
+        ~count=1000,
+        ~name="all_elves_resurrected brings the Troll killing list to a stable state",
+        troll_elf_arbitrary,
+        ((troll,elf)) => {
+          let test = all_elves_resurrected(troll);
+          let test2 = all_elves_resurrected(troll);
+          (test |> scoring ) == ( test2 |> scoring )
+        }
+      )
+      |> expect.ext.qCheckTest;
+      ()
+  })
+});
+
+describe("Troll Metamorphism", ({test}) => {
+  test(
+    "ensure score inscrese after a kill",
+    ({expect}) => {
+      QCheck.Test.make(
+      ~count=1000,
+      ~name="ensure score inscrese after a kill",
+      troll_elf_arbitrary,
+      ((troll, elf)) => {
+        //Score after a kill must be more than before the kill
+        let scoreBefore = scoring(troll);
+        let scoreAfterOneKill = scoring( i_got_one(elf, troll) );
+        ( scoreAfterOneKill >  scoreBefore )
+      }
+    )
+    |> expect.ext.qCheckTest;
+    ()
+  })
+});
+
+describe("Troll Injection", ({test}) => {
+  test(
+    "comparing elf value",
+    ({expect}) => {
+      QCheck.Test.make(
+      ~count=1000,
+      ~name="comparing elf value",
+      troll_two_elves_arbitrary,
+      ((troll, elf1, elf2)) => {
+        //etat du troll apres kill elf1
+        let killElf1 = i_got_one(elf1, troll);
+        //etat du troll apres kill elf2
+        let killElf2 = i_got_one(elf2, troll);
+        //le test plante car certains elfs ont la meme value
+        if (value(elf1) == value(elf2)) {
+          //{ Elf.role = Elf.Archer; race = Elf.DarkElf } = 2, { Elf.role = Elf.Swordsman; race = Elf.HighElf } = 2)
+          ( killElf1 |> scoring ) == ( killElf2 |> scoring );
+        } else {
+          //{ Elf.role = Elf.Warlock; race = Elf.HighElf } = 8, { Elf.role = Elf.Swordsman; race = Elf.HighElf } = 2)
+          ( killElf1 |> scoring ) != ( killElf2 |> scoring );
+        };
+      }
+    )
+    |> expect.ext.qCheckTest;
+    ()
+  })
+});
