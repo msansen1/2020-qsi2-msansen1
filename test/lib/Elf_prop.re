@@ -19,7 +19,8 @@ describe("Elf Invariance", ({test}) => {
       |> expect.ext.qCheckTest;
       ();
     })
-    /* test("The value of a High elf must be an even number", ({expect}) => {
+    
+    test("The value of a High elf must be an even number", ({expect}) => {
          QCheck.Test.make(
            ~count=1000,
            ~name="The value of a High elf must be an even number",
@@ -29,5 +30,5 @@ describe("Elf Invariance", ({test}) => {
          )
          |> expect.ext.qCheckTest;
          ();
-       }); */
+       }); 
 });

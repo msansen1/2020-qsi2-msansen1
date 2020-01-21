@@ -17,7 +17,7 @@ type t = {
 
 let scoring: t => score =
   troll => {
-    Killed.fold((k, v, accum) => Elf.value(k) * v, troll.kills, 0);
+    Killed.fold((k, v, accum) => Elf.value(k) * v * accum, troll.kills, 0);
   };
 
 let modify_score: (option(kill) => option(kill), Elf.t, t) => t =
